@@ -91,21 +91,24 @@ namespace PokerTournament
             pot_value += last_play_amount;
             int call_value = last_play_amount;
             double pot_odds;
-            int  bet_value = last_play_amount + ((call_value!=0)?(int)(hand_strength * call_value*2):20);
+            int  bet_value = last_play_amount + ((call_value!=0)?(int)(hand_strength * call_value*1.5):20);
             double call_odds = (double)call_value / (double)(pot_value + call_value);
             double bet_odds = (double)bet_value / (double)(pot_value + bet_value);
-            if (bet_odds > call_odds)
+
+            Console.WriteLine(call_odds + " " + bet_odds);
+            if (bet_odds > call_odds || last_play_amount==0)
             {
                 action_String = "bet";
                 pot_odds = bet_odds;
                 amount = bet_value;
+                Console.WriteLine("In bet");
             }
             else
             {
                 action_String = "call";
                 pot_odds = call_odds;
                 amount = call_value;
-
+                Console.WriteLine("In call");
             }
 
             double rateOfReturn = hand_strength / pot_odds;
@@ -143,105 +146,135 @@ namespace PokerTournament
             Else (RR >= 1.3) 0% fold, 30% call, 70% raise
             If fold and amount to call is zero, then call.
             */   
+
+            
             if(rateOfReturn < 0.8)
             {
                 int tmp = rnd.Next(100);
                 int tmp_momey = (Money > 10) ? 10 : Money;
-                if(tmp>95)//Bluff
+                if (last_action == null)
                 {
-                    if (bet)
-                    {
-                        decision = new PlayerAction(Name, "Bet1", "raise",tmp_momey );
-                    }
-                    else
-                    {
-                        decision = new PlayerAction(Name, "Bet1", "bet",tmp_momey);
-                        bet = true;
-                    }
+                    decision = FoldAction(last_action);
                 }
                 else
                 {
-                    decision = FoldAction(last_action);
-                    
+                    if (tmp > 95)//Bluff
+                    {
+                        if (bet)
+                        {
+                            decision = new PlayerAction(Name, "Bet1", "raise", tmp_momey);
+                        }
+                        else
+                        {
+                            decision = new PlayerAction(Name, "Bet1", "bet", tmp_momey);
+                            bet = true;
+                        }
+                    }
+                    else
+                    {
+                        decision = FoldAction(last_action);
+
+                    }
                 }
             }
             else if (rateOfReturn < 1) 
             {
                 int tmp = rnd.Next(100);
-                if (tmp < 80)
+                if (last_action == null)
                 {
                     decision = FoldAction(last_action);
                 }
-                else if (tmp>80 && tmp <= 85)
+                else
                 {
-                    if (bet)
+                    if (tmp < 80)
                     {
-                        decision = new PlayerAction(Name, "Bet1", "call", 0);
+                        decision = FoldAction(last_action);
                     }
-                    else
+                    else if (tmp > 80 && tmp <= 85)
                     {
-                        decision = new PlayerAction(Name, "Bet1", "fold", 0);
+                        if (bet)
+                        {
+                            decision = new PlayerAction(Name, "Bet1", "call", 0);
+                        }
+                        else
+                        {
+                            decision = new PlayerAction(Name, "Bet1", "fold", 0);
+                        }
                     }
-                }
-                else//bluff
-                {
-                    int tmp_money = (Money > 20) ? 20 : Money; 
-                    decision = new PlayerAction(Name, "Bet1", "raise",tmp_money);
+                    else//bluff
+                    {
+                        int tmp_money = (Money > 20) ? 20 : Money;
+                        decision = new PlayerAction(Name, "Bet1", "raise", tmp_money);
+                    }
                 }
             }
             else if(rateOfReturn<1.3){
 
                 int tmp = rnd.Next(100);
                 int tmp_money = (Money>amount)?amount:Money;
-                switch (action_suggestion)
+                if (last_action == null)
                 {
-                    case "call":
-                        if (bet)
-                        {
-                            decision = new PlayerAction(Name, "Bet1", "call", tmp_money);
-                        }
-                        else
-                        {
-                            decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
-                        }
-                        break;
-                    case "bet":
-                        tmp_money = (Money > amount * 2) ? tmp_money : 0;
-                        if (bet && tmp_money!=0)
-                        {
-                            decision = new PlayerAction(Name, "Bet1", "raise", amount);
-                        }
-
-                        break;
+                    decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
                 }
+                else
+                {
+                    switch (action_suggestion)
+                    {
+                        case "call":
+                            if (bet)
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "call", tmp_money);
+                            }
+                            else
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
+                            }
+                            break;
+                        case "bet":
+                            tmp_money = (Money > amount * 2) ? tmp_money : 0;
+                            if (bet && tmp_money != 0)
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "raise", amount);
+                            }
 
+                            break;
+                    }
+                }
             }
             else if (rateOfReturn >= 1.3)
             {
                 int tmp = rnd.Next(100);
                 int tmp_money = (Money > amount) ? amount : Money;
-                switch (action_suggestion)
+                if (last_action == null)
                 {
-                    case "call":
-                        if (bet)
-                        {
-                            decision = new PlayerAction(Name, "Bet1", "call", tmp_money);
-                        }
-                        else
-                        {
-                            decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
-                        }
-                        break;
-                    case "bet":
-                        tmp_money = (Money > amount * 2) ? tmp_money : 0;
-                        if (bet && tmp_money != 0)
-                        {
-                            decision = new PlayerAction(Name, "Bet1", "raise", amount);
-                        }
+                    decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
+                }
+                else
+                {
+                    switch (action_suggestion)
+                    {
+                        case "call":
+                            if (bet)
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "call", tmp_money);
+                            }
+                            else
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
+                            }
+                            break;
+                        case "bet":
+                            tmp_money = (Money > amount * 2) ? tmp_money : 0;
+                            if (bet && tmp_money != 0)
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "raise", amount);
+                            }
 
-                        break;
+                            break;
+                    }
                 }
             }
+            Console.Write("Decision" + decision.ActionName);
             return decision;
 
         }
