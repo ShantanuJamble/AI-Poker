@@ -22,3 +22,9 @@ C:\Game AI Online\Projects\Project3\PokerTournament v4\PokerTournament\obj\Debug
 C:\Game AI Online\Projects\Project3\PokerTournament v4\PokerTournament\bin\Debug\PokerTournament.exe
 C:\Game AI Online\Projects\Project3\PokerTournament v4\PokerTournament\bin\Debug\PokerTournament.pdb
 C:\Game AI Online\Projects\Project3\PokerTournament v4\PokerTournament\obj\Debug\PokerTournament.csprojResolveAssemblyReference.cache
+C:\Users\user\Documents\GitHub\AI-Poker\PokerTournament\bin\Debug\PokerTournament.exe.config
+C:\Users\user\Documents\GitHub\AI-Poker\PokerTournament\obj\Debug\PokerTournament.exe
+C:\Users\user\Documents\GitHub\AI-Poker\PokerTournament\obj\Debug\PokerTournament.pdb
+C:\Users\user\Documents\GitHub\AI-Poker\PokerTournament\bin\Debug\PokerTournament.exe
+C:\Users\user\Documents\GitHub\AI-Poker\PokerTournament\bin\Debug\PokerTournament.pdb
+C:\Users\user\Documents\GitHub\AI-Poker\PokerTournament\obj\Debug\PokerTournament.csprojResolveAssemblyReference.cache

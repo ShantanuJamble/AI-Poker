@@ -139,16 +139,19 @@ namespace PokerTournament
             Console.Write(amount);
             Random rnd = new Random();
 
+            //These values are the probabilities that the AI will choose a given action based on the rate of return
+            //There is some randomness to ensure that you can never tell how strong the AI's hand is based on its actions
+            //This is so the AI is able to bluff
             /*
             If RR < 0.8 then 95% fold, 0 % call, 5% raise (bluff)
             If RR < 1.0 then 80%, fold 5% call, 15% raise (bluff)
             If RR <1.3 the 0% fold, 60% call, 40% raise
             Else (RR >= 1.3) 0% fold, 30% call, 70% raise
             If fold and amount to call is zero, then call.
-            */   
+            */
 
-            
-            if(rateOfReturn < 0.8)
+            //Low rate of return, AI is very likely to fold but may occasionally raise
+            if (rateOfReturn < 0.8)
             {
                 int tmp = rnd.Next(100);
                 int tmp_momey = (Money > 10) ? 10 : Money;
@@ -177,6 +180,7 @@ namespace PokerTournament
                     }
                 }
             }
+            //somewhat low rate of return, likely to fold, but also may call and somewhat more likely to raise than call
             else if (rateOfReturn < 1) 
             {
                 int tmp = rnd.Next(100);
@@ -208,7 +212,8 @@ namespace PokerTournament
                     }
                 }
             }
-            else if(rateOfReturn<1.3){
+            //high rate of return, AI will not fold. It may raise, but is more likely to call
+            else if (rateOfReturn<1.3){
 
                 int tmp = rnd.Next(100);
                 int tmp_money = (Money>amount)?amount:Money;
@@ -241,6 +246,7 @@ namespace PokerTournament
                     }
                 }
             }
+            //very high rate of return. AI is very likely to raise but may also call.
             else if (rateOfReturn >= 1.3)
             {
                 int tmp = rnd.Next(100);
@@ -293,10 +299,174 @@ namespace PokerTournament
 
             return decision;
         }
-
+        
         public override PlayerAction BettingRound2(List<PlayerAction> actions, Card[] hand)
         {
-            throw new NotImplementedException();
+            //reset values
+            PlayerAction decision = null;
+            int amount = 0;
+            string action_suggestion = "";
+            PlayerAction last_action = (actions.Count > 0) ? actions[actions.Count - 1] : null;
+
+            //bet needs to be played to raise or call
+            if (bet == false && last_action != null)
+            {
+                if (last_action.ActionName == "bet")
+                {
+                    bet = true;
+                }
+            }
+            double rateOfReturn = CalculateRateOfReturn(last_action, hand, out action_suggestion, out amount);
+            Console.Write(rateOfReturn);
+            Console.Write(action_suggestion);
+            Console.Write(amount);
+            Random rnd = new Random();
+
+            //These values are the probabilities that the AI will choose a given action based on the rate of return
+            //There is some randomness to ensure that you can never tell how strong the AI's hand is based on its actions
+            //This is so the AI is able to bluff
+            /*
+            If RR < 0.8 then 95% fold, 0 % call, 5% raise (bluff)
+            If RR < 1.0 then 80% fold, 5% call, 15% raise (bluff)
+            If RR <1.3 the 0% fold, 60% call, 40% raise
+            Else (RR >= 1.3) 0% fold, 30% call, 70% raise
+            If fold and amount to call is zero, then call.
+            */
+
+            //Low rate of return, AI is very likely to fold but may occasionally raise
+            if (rateOfReturn < 0.8)
+            {
+                int tmp = rnd.Next(100);
+                int tmp_momey = (Money > 10) ? 10 : Money;
+                if (last_action == null)
+                {
+                    decision = FoldAction(last_action);
+                }
+                else
+                {
+                    if (tmp > 95)//Bluff
+                    {
+                        if (bet)
+                        {
+                            decision = new PlayerAction(Name, "Bet1", "raise", tmp_momey);
+                        }
+                        else
+                        {
+                            decision = new PlayerAction(Name, "Bet1", "bet", tmp_momey);
+                            bet = true;
+                        }
+                    }
+                    else
+                    {
+                        decision = FoldAction(last_action);
+
+                    }
+                }
+            }
+            //somewhat low rate of return, likely to fold, but also may call and somewhat more likely to raise than call
+            else if (rateOfReturn < 1)
+            {
+                int tmp = rnd.Next(100);
+                if (last_action == null)
+                {
+                    decision = FoldAction(last_action);
+                }
+                else
+                {
+                    if (tmp < 80)
+                    {
+                        decision = FoldAction(last_action);
+                    }
+                    else if (tmp > 80 && tmp <= 85)
+                    {
+                        if (bet)
+                        {
+                            decision = new PlayerAction(Name, "Bet1", "call", 0);
+                        }
+                        else
+                        {
+                            decision = new PlayerAction(Name, "Bet1", "fold", 0);
+                        }
+                    }
+                    else//bluff
+                    {
+                        int tmp_money = (Money > 20) ? 20 : Money;
+                        decision = new PlayerAction(Name, "Bet1", "raise", tmp_money);
+                    }
+                }
+            }
+            //high rate of return, AI will not fold. It may raise, but is more likely to call
+            else if (rateOfReturn < 1.3)
+            {
+
+                int tmp = rnd.Next(100);
+                int tmp_money = (Money > amount) ? amount : Money;
+                if (last_action == null)
+                {
+                    decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
+                }
+                else
+                {
+                    switch (action_suggestion)
+                    {
+                        case "call":
+                            if (bet)
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "call", tmp_money);
+                            }
+                            else
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
+                            }
+                            break;
+                        case "bet":
+                            tmp_money = (Money > amount * 2) ? tmp_money : 0;
+                            if (bet && tmp_money != 0)
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "raise", amount);
+                            }
+
+                            break;
+                    }
+                }
+            }
+            //very high rate of return. AI is very likely to raise but may also call.
+            else if (rateOfReturn >= 1.3)
+            {
+                int tmp = rnd.Next(100);
+                int tmp_money = (Money > amount) ? amount : Money;
+                if (last_action == null)
+                {
+                    decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
+                }
+                else
+                {
+                    switch (action_suggestion)
+                    {
+                        case "call":
+                            if (bet)
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "call", tmp_money);
+                            }
+                            else
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "bet", tmp_money);
+                            }
+                            break;
+                        case "bet":
+                            tmp_money = (Money > amount * 2) ? tmp_money : 0;
+                            if (bet && tmp_money != 0)
+                            {
+                                decision = new PlayerAction(Name, "Bet1", "raise", amount);
+                            }
+
+                            break;
+                    }
+                }
+            }
+            Console.Write("Decision" + decision.ActionName);
+            return decision;
+
         }
 
         public override PlayerAction Draw(Card[] hand)
