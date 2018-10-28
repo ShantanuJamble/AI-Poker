@@ -301,7 +301,255 @@ namespace PokerTournament
 
         public override PlayerAction Draw(Card[] hand)
         {
-            throw new NotImplementedException();
+            // Sort the hand
+            Evaluate.SortHand(hand);
+
+            // Figure out what cards to replace
+            bool[] cardsToDelete = GetCardsToDelete(hand);
+
+            // How many cards to replace
+            int numOfCardsToDelete = 0;
+            for(int i = 0; i < cardsToDelete.Length; i++)
+            {
+                if(cardsToDelete[i])
+                {
+                    numOfCardsToDelete++;
+                }
+            }
+
+            PlayerAction pa = null;
+            if(numOfCardsToDelete > 0 && numOfCardsToDelete < 5)
+            {
+                for(int i = 0; i < cardsToDelete.Length; i++)
+                {
+                    if(cardsToDelete[i])
+                    {
+                        hand[i] = null;
+                    }
+                }
+
+                pa = new PlayerAction(Name, "Draw", "draw", numOfCardsToDelete);
+            }
+            else if(numOfCardsToDelete == 5)
+            {
+                for(int i = 0; i < hand.Length; i++)
+                {
+                    hand[i] = null;
+                }
+
+                pa = new PlayerAction(Name, "Draw", "draw", 5);
+            }
+            else
+            {
+                pa = new PlayerAction(Name, "Draw", "stand pat", 0);
+            }
+
+            return pa;
+        }
+
+        public bool[] GetCardsToDelete(Card[] hand)
+        {
+            bool[] cardPositionToDelete = { false, false, false, false, false }; 
+            Card highCard = null;
+            int rank = Evaluate.RateAHand(hand, out highCard);
+
+            // Do not change any cards for Royal Flush, Straight Flush, Full House, Flush or Straight
+
+            // In case of four of a kind try and get a better value card for the kicker
+            if(rank == 8 && highCard.Value < 7)
+            {
+                if(hand[0].Value == hand[2].Value)
+                {
+                    cardPositionToDelete[4] = true;
+                }
+                else
+                {
+                    cardPositionToDelete[0] = true;
+                }
+            }
+
+            // In case of 3 of a kind, change one card if the kicker is high, else discard 2 cards
+            if (rank == 4 && highCard.Value > 7)
+            {
+                if((hand[0].Value == hand[1].Value) && (hand[0].Value == hand[2].Value))
+                {
+                    cardPositionToDelete[3] = true;
+                }
+                else
+                {
+                    cardPositionToDelete[0] = true;
+                }
+            }
+            else if(rank == 4 && highCard.Value < 7)
+            {
+                if ((hand[0].Value == hand[1].Value) && (hand[0].Value == hand[2].Value))
+                {
+                    cardPositionToDelete[3] = true;
+                    cardPositionToDelete[4] = true;
+                }
+                else if ((hand[1].Value == hand[2].Value) && (hand[1].Value == hand[3].Value))
+                {
+                    cardPositionToDelete[0] = true;
+                    cardPositionToDelete[4] = true;
+                }
+                else
+                {
+                    cardPositionToDelete[0] = true;
+                    cardPositionToDelete[1] = true;
+                }
+            }
+
+            // If it is one pair or high card, check if there is a possibility of flush or straight and discard cards accordingly
+            if(rank == 2 || rank == 1)
+            {
+                if(IsFlushPossible(hand, out cardPositionToDelete))
+                {
+                    return cardPositionToDelete;
+                }
+                else if (IsStraightPossible(hand, out cardPositionToDelete))
+                {
+                    return cardPositionToDelete;
+                }
+                else
+                {
+                    // Discard cards with value lower than 10
+                    for(int i = 0; i < hand.Length; i++)
+                    {
+                        if(hand[i].Value < 10)
+                        {
+                            cardPositionToDelete[i] = true;
+                        }
+                    }
+                }
+            }
+
+            return cardPositionToDelete;
+        }
+
+        public bool IsFlushPossible(Card[] hand, out bool[] cardsPosition)
+        {
+            int spades = 0;
+            int hearts = 0;
+            int clubs = 0;
+            int diamonds = 0;
+
+            cardsPosition = new bool[5] { true, true, true, true, true };
+
+            for(int i = 0; i < hand.Length; i++)
+            {
+                if (hand[i].Suit.Equals("Spades"))
+                    spades++;
+                else if (hand[i].Suit.Equals("Hearts"))
+                    hearts++;
+                else if (hand[i].Suit.Equals("Clubs"))
+                    clubs++;
+                else
+                    diamonds++;
+            }
+
+            if(spades >= 3)
+            {
+                for(int i = 0; i < hand.Length; i++)
+                {
+                    if(hand[i].Suit.Equals("Spades"))
+                    {
+                        cardsPosition[i] = false;
+                    }
+                }
+                return true;
+            }
+            else if(hearts >= 3)
+            {
+                for (int i = 0; i < hand.Length; i++)
+                {
+                    if (hand[i].Suit.Equals("Hearts"))
+                    {
+                        cardsPosition[i] = false;
+                    }
+                }
+                return true;
+            }
+            else if (clubs >= 3)
+            {
+                for (int i = 0; i < hand.Length; i++)
+                {
+                    if (hand[i].Suit.Equals("Clubs"))
+                    {
+                        cardsPosition[i] = false;
+                    }
+                }
+                return true;
+            }
+            else if (diamonds >= 3)
+            {
+                for (int i = 0; i < hand.Length; i++)
+                {
+                    if (hand[i].Suit.Equals("Diamonds"))
+                    {
+                        cardsPosition[i] = false;
+                    }
+                }
+                return true;
+            }
+            
+            for(int i = 0; i < hand.Length; i++)
+            {
+                cardsPosition[i] = false;
+            }
+
+            return false;
+        }
+
+        public bool IsStraightPossible(Card[] hand, out bool[] cardsPosition)
+        {
+            int numCards = 0;
+
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = i + 1; j < hand.Length; j++)
+                {
+                    if (hand[j].Value - hand[i].Value > 4)
+                    {
+                        if (j - i + 1 > numCards)
+                        {
+                            numCards = j - i + 1;
+                        }
+                        break;
+                    }
+                }
+            }
+
+            if (numCards == 3)
+            {
+                if (hand[2].Value - hand[0].Value < 5)
+                {
+                    cardsPosition = new bool[5] { false, false, false, true, true };
+                }
+                else if (hand[3].Value - hand[1].Value < 5)
+                {
+                    cardsPosition = new bool[5] { true, false, false, false, true };
+                }
+                else
+                {
+                    cardsPosition = new bool[5] { true, true, false, false, false };
+                }
+                return true;
+            }
+            else if (numCards == 4)
+            {
+                if (hand[3].Value - hand[0].Value < 5)
+                {
+                    cardsPosition = new bool[5] { false, false, false, false, true };
+                }
+                else
+                {
+                    cardsPosition = new bool[5] { true, false, false, false, false };
+                }
+                return true;
+            }
+
+            cardsPosition = new bool[5] { false, false, false, false, false };
+            return false;
         }
     }
 }
