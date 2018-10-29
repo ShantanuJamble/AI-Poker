@@ -91,7 +91,7 @@ namespace PokerTournament
             pot_value += last_play_amount;
             int call_value = last_play_amount;
             double pot_odds;
-            int  bet_value = last_play_amount + ((call_value!=0)?(int)(hand_strength * call_value*1.5):20);
+            int  bet_value = last_play_amount + ((call_value!=0)?(int)(hand_strength * call_value):20);
             double call_odds = (double)call_value / (double)(pot_value + call_value);
             double bet_odds = (double)bet_value / (double)(pot_value + bet_value);
 
