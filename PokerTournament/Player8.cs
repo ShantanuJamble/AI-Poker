@@ -91,7 +91,7 @@ namespace PokerTournament
             pot_value += last_play_amount;
             int call_value = last_play_amount;
             double pot_odds;
-            int  bet_value = last_play_amount + ((call_value!=0)?(int)(hand_strength * call_value*1.5):20);
+            int  bet_value = last_play_amount + ((call_value!=0)?(int)(hand_strength * call_value):20);
             double call_odds = (double)call_value / (double)(pot_value + call_value);
             double bet_odds = (double)bet_value / (double)(pot_value + bet_value);
 
@@ -145,8 +145,8 @@ namespace PokerTournament
             /*
             If RR < 0.8 then 95% fold, 0 % call, 5% raise (bluff)
             If RR < 1.0 then 80%, fold 5% call, 15% raise (bluff)
-            If RR <1.3 the 0% fold, 60% call, 40% raise
-            Else (RR >= 1.3) 0% fold, 30% call, 70% raise
+            If RR <1.3 then decides based on call/bet odds
+            Else (RR >= 1.3) then decides based on call/bet odds
             If fold and amount to call is zero, then call.
             */
 
@@ -212,7 +212,7 @@ namespace PokerTournament
                     }
                 }
             }
-            //high rate of return, AI will not fold. It may raise, but is more likely to call
+            //high rate of return, decides in "Calculate Rate of Return" based on call odds and bet odds
             else if (rateOfReturn<1.3){
 
                 int tmp = rnd.Next(100);
@@ -246,7 +246,7 @@ namespace PokerTournament
                     }
                 }
             }
-            //very high rate of return. AI is very likely to raise but may also call.
+            //high rate of return, decides in "Calculate Rate of Return" based on call odds and bet odds
             else if (rateOfReturn >= 1.3)
             {
                 int tmp = rnd.Next(100);
@@ -326,10 +326,10 @@ namespace PokerTournament
             //There is some randomness to ensure that you can never tell how strong the AI's hand is based on its actions
             //This is so the AI is able to bluff
             /*
-            If RR < 0.8 then 95% fold, 0 % call, 5% raise (bluff)
-            If RR < 1.0 then 80% fold, 5% call, 15% raise (bluff)
-            If RR <1.3 the 0% fold, 60% call, 40% raise
-            Else (RR >= 1.3) 0% fold, 30% call, 70% raise
+            If RR < 0.8 then 90% fold, 0 % call, 10% raise (bluff)
+            If RR < 1.0 then 70% fold, 10% call, 20% raise (bluff)
+            If RR <1.3  then decides based on call/bet odds
+            Else (RR >= 1.3)  then decides based on call/bet odds
             If fold and amount to call is zero, then call.
             */
 
@@ -344,7 +344,7 @@ namespace PokerTournament
                 }
                 else
                 {
-                    if (tmp > 95)//Bluff
+                    if (tmp > 90)//Bluff
                     {
                         if (bet)
                         {
@@ -373,11 +373,11 @@ namespace PokerTournament
                 }
                 else
                 {
-                    if (tmp < 80)
+                    if (tmp < 70)
                     {
                         decision = FoldAction(last_action);
                     }
-                    else if (tmp > 80 && tmp <= 85)
+                    else if (tmp > 70 && tmp <= 80)
                     {
                         if (bet)
                         {
@@ -395,7 +395,7 @@ namespace PokerTournament
                     }
                 }
             }
-            //high rate of return, AI will not fold. It may raise, but is more likely to call
+            //high rate of return, decides in "Calculate Rate of Return" based on call odds and bet odds
             else if (rateOfReturn < 1.3)
             {
 
@@ -430,7 +430,7 @@ namespace PokerTournament
                     }
                 }
             }
-            //very high rate of return. AI is very likely to raise but may also call.
+            //very high rate of return, decides in "Calculate Rate of Return" based on call odds and bet odds
             else if (rateOfReturn >= 1.3)
             {
                 int tmp = rnd.Next(100);
