@@ -569,6 +569,22 @@ namespace PokerTournament
                 }
             }
 
+            if(rank == 3 && highCard.Value < 7)
+            {
+                if((hand[4].Value == hand[3].Value) && (hand[2].Value == hand[1].Value))
+                {
+                    cardPositionToDelete[0] = true;
+                }
+                else if ((hand[4].Value == hand[3].Value) && (hand[1].Value == hand[0].Value))
+                {
+                    cardPositionToDelete[2] = true;
+                }
+                else
+                {
+                    cardPositionToDelete[4] = true;
+                }
+            }
+
             // If it is one pair or high card, check if there is a possibility of flush or straight and discard cards accordingly
             if(rank == 2 || rank == 1)
             {
